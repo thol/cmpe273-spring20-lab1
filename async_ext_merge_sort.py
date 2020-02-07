@@ -2,12 +2,12 @@ import os
 import datetime
 import asyncio
 
-async def splitList(inputList):
+def splitList(inputList):
     listLen = len(inputList)
     mid = listLen // 2
     return inputList[:mid], inputList[mid:]
 
-async def mergeList(leftList, rightList):
+def mergeList(leftList, rightList):
     if len(leftList) == 0:
         return rightList
     elif len(rightList) == 0:
@@ -34,7 +34,7 @@ async def mergeList(leftList, rightList):
         
     return listMerged
 
-async def mergeSort(numList):
+def mergeSort(numList):
     if len(numList) <= 1:
         return numList
     else:
@@ -49,12 +49,11 @@ def getSortedListFromFile(numFile):
         lineList = [int(numValue.rstrip()) for numValue in f.readlines()]
     return mergeSort(lineList)
 
-async def writeSortedFile(fileName, sortedList):
+def writeSortedFile(fileName, sortedList):
     with open(fileName,'w') as out:
         out.writelines("%d\n" % num for num in sortedList)
 
-async def main ():
-    startTime = datetime.datetime.now()
+async def sortFile(input_path):
     dirname = os.path.dirname(__file__)
     input_path = os.path.join(dirname,'input')
     sortedFinal = []
@@ -63,15 +62,23 @@ async def main ():
         sortedFile = unsortedFile.replace("input/unsorted","output/sorted")
         # print(unsortedFile)
         sortedList = getSortedListFromFile(unsortedFile)
-        await asyncio.gather(writeSortedFile(sortedFile,sortedList))
-        sortedFinal = await asyncio.gather(mergeList(sortedFinal, sortedList))
+        writeSortedFile(sortedFile,sortedList)
+        sortedFinal = mergeList(sortedFinal, sortedList)
 
     finalOutput = os.path.join(dirname,'output','sorted.txt')
-    await asyncio.gather(writeSortedFile(finalOutput,sortedFinal))
-    endTime = datetime.datetime.now()
+    writeSortedFile(finalOutput,sortedFinal)
 
+
+def main ():
+    startTime = datetime.datetime.now()
+    dirname = os.path.dirname(__file__)
+    input_path = os.path.join(dirname,'input')
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(sortFile(input_path))
+
+    endTime = datetime.datetime.now()
     duration = endTime - startTime
     print("Duration {0} seconds and {1} ms".format(duration.total_seconds(),duration.microseconds))
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()

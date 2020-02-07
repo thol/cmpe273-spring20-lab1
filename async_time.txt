@@ -1,0 +1,2 @@
+Duration 0.011668 seconds and 11668 ms
+python3 async_ext_merge_sort.py  0.08s user 0.02s system 91% cpu 0.112 total

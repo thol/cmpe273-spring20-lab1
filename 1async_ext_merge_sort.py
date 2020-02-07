@@ -1,12 +1,14 @@
 import os
 import datetime
+import asyncio
 
-def splitList(inputList):
+sortedFinal = []
+async def splitList(inputList):
     listLen = len(inputList)
     mid = listLen // 2
     return inputList[:mid], inputList[mid:]
 
-def mergeList(leftList, rightList):
+async def mergeList(leftList, rightList):
     if len(leftList) == 0:
         return rightList
     elif len(rightList) == 0:
@@ -48,29 +50,37 @@ def getSortedListFromFile(numFile):
         lineList = [int(numValue.rstrip()) for numValue in f.readlines()]
     return mergeSort(lineList)
 
-def writeSortedFile(fileName, sortedList):
+async def writeSortedFile(fileName, sortedList):
     with open(fileName,'w') as out:
         out.writelines("%d\n" % num for num in sortedList)
 
-def main ():
+async def processFile(unsortedFile):
+    sortedFile = unsortedFile.replace("input/unsorted","output/sorted")
+    sortedList = getSortedListFromFile(unsortedFile)
+    await writeSortedFile(sortedFile,sortedList)
+    sortedFinal.append(sortedList)
+
+async def main ():
     startTime = datetime.datetime.now()
     dirname = os.path.dirname(__file__)
     input_path = os.path.join(dirname,'input')
-    sortedFinal = []
+    # coroutines = list()
+    # loop = asyncio.get_event_loop()
     for file in os.listdir(input_path):
         unsortedFile = input_path + "/" + file
-        sortedFile = unsortedFile.replace("input/unsorted","output/sorted")
-        # print(unsortedFile)
-        sortedList = getSortedListFromFile(unsortedFile)
-        writeSortedFile(sortedFile,sortedList)
-        sortedFinal = mergeList(sortedFinal, sortedList)
+        await asyncio.gather(processFile(unsortedFile))
+        # loop.run_until_complete(task)
+        # coroutines.append()
+        # await asyncio.gather(processFile(unsortedFile))   
+    # await asyncio.gather(*coroutines)
+    
 
     finalOutput = os.path.join(dirname,'output','sorted.txt')
-    writeSortedFile(finalOutput,sortedFinal)
+    writeSortedFile(finalOutput,mergeSort(sortedFinal))
     endTime = datetime.datetime.now()
 
     duration = endTime - startTime
     print("Duration {0} seconds and {1} ms".format(duration.total_seconds(),duration.microseconds))
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
